@@ -4,6 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from .models import Categoria, Producto
 from .models import Pedido
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.db import transaction
+from django.db.models import F
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 @login_required
@@ -69,3 +74,31 @@ def mis_pedidos(request):
     return render(request, 'pedidos/mis_pedidos.html', {
         'pedidos': pedidos
     })
+
+
+@login_required
+@require_POST
+def cancelar_pedido(request, pedido_id):
+    if request.user.is_staff:
+        raise PermissionDenied
+
+    with transaction.atomic():
+        pedido = get_object_or_404(
+            Pedido.objects.select_for_update(),
+            id=pedido_id,
+            cliente=request.user,
+            estado='Pendiente'
+        )
+
+        for detalle in pedido.detalles.all():
+            Producto.objects.filter(
+                id=detalle.producto_id
+            ).update(
+                stock=F('stock') + detalle.cantidad
+            )
+
+        pedido.estado = 'Cancelado'
+        pedido.save(update_fields=['estado'])
+
+    messages.success(request, 'Pedido cancelado correctamente')
+    return redirect('mis_pedidos')

@@ -25,6 +25,14 @@
 
     <p>Total: {{ pedido.total|pesos }}</p>
 
+{% if pedido.estado == 'Pendiente' %}
+    <form method="post" action="{% url 'cancelar_pedido' pedido.id %}">
+        {% csrf_token %}
+        <button type="submit">Cancelar pedido</button>
+    </form>
+{% endif %}
+
+
 {% empty %}
     <p>Todavía no tienes pedidos.</p>
 {% endfor %}
