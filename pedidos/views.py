@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from .models import Categoria, Producto
+from .models import Pedido
 
 # Create your views here.
 @login_required
@@ -54,3 +55,17 @@ def catalogo(request):
         'categoria_id': categoria_id,
     })
 
+@login_required
+def mis_pedidos(request):
+    if request.user.is_staff:
+        raise PermissionDenied
+
+    pedidos = Pedido.objects.filter(
+        cliente=request.user
+    ).prefetch_related(
+        'detalles__producto'
+    ).order_by('-fecha')
+
+    return render(request, 'pedidos/mis_pedidos.html', {
+        'pedidos': pedidos
+    })

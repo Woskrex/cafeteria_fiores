@@ -1,0 +1,31 @@
+
+{% extends 'pedidos/base.html' %}
+{% load precios %}
+
+{% block contenido %}
+<h2>Mis pedidos</h2>
+
+{% for pedido in pedidos %}
+    <hr>
+    <h3>Pedido #{{ pedido.id }}</h3>
+
+    <p>Fecha: {{ pedido.fecha }}</p>
+    <p>Retiro: {{ pedido.hora_retiro }}</p>
+    <p>Estado: {{ pedido.estado }}</p>
+
+    <ul>
+        {% for detalle in pedido.detalles.all %}
+            <li>
+                {{ detalle.producto.nombre }}
+                x {{ detalle.cantidad }}
+                - {{ detalle.subtotal|pesos }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <p>Total: {{ pedido.total|pesos }}</p>
+
+{% empty %}
+    <p>Todavía no tienes pedidos.</p>
+{% endfor %}
+{% endblock %}
