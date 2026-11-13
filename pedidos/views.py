@@ -2,6 +2,7 @@ from functools import wraps
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from .models import Categoria, Producto
 
 # Create your views here.
 @login_required
@@ -22,3 +23,34 @@ def solo_encargado(vista):
 @solo_encargado
 def panel_encargado(request):
     return render(request, 'pedidos/panel_encargado.html')
+
+
+
+@login_required
+def catalogo(request):
+    if request.user.is_staff:
+        raise PermissionDenied
+
+    productos = Producto.objects.filter(
+        disponible=True,
+        categoria__activa=True
+    ).select_related('categoria')
+
+    busqueda = request.GET.get('buscar', '')
+    categoria_id = request.GET.get('categoria', '')
+
+    if busqueda:
+        productos = productos.filter(nombre__icontains=busqueda)
+
+    if categoria_id.isdigit():
+        productos = productos.filter(categoria_id=int(categoria_id))
+
+    categorias = Categoria.objects.filter(activa=True)
+
+    return render(request, 'pedidos/catalogo.html', {
+        'productos': productos,
+        'categorias': categorias,
+        'busqueda': busqueda,
+        'categoria_id': categoria_id,
+    })
+

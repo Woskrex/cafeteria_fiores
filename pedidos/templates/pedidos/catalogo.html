@@ -1,0 +1,55 @@
+
+{% extends 'pedidos/base.html' %}
+{% load precios %}
+
+{% block contenido %}
+<h2>Catálogo de productos</h2>
+
+<form method="get">
+    <input type="text" name="buscar"
+           placeholder="Buscar producto"
+           value="{{ busqueda }}">
+
+    <select name="categoria">
+        <option value="">Todas las categorías</option>
+        {% for categoria in categorias %}
+            <option value="{{ categoria.id }}"
+                {% if categoria_id == categoria.id|stringformat:"s" %}selected{% endif %}>
+                {{ categoria.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Buscar</button>
+</form>
+
+<table border="1">
+    <tr>
+        <th>Código</th>
+        <th>Producto</th>
+        <th>Categoría</th>
+        <th>Precio</th>
+        <th>Estado</th>
+    </tr>
+
+    {% for producto in productos %}
+    <tr>
+        <td>{{ producto.codigo }}</td>
+        <td>{{ producto.nombre }}</td>
+        <td>{{ producto.categoria.nombre }}</td>
+        <td>{{ producto.precio|pesos }}</td>
+        <td>
+            {% if producto.stock > 0 %}
+                Disponible
+            {% else %}
+                Agotado
+            {% endif %}
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No se encontraron productos.</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -19,6 +19,7 @@
                 <a href="{% url 'panel_encargado' %}">Panel encargado</a>
             {% else %}
                 <span>Rol: Cliente</span>
+                <a href="{% url 'catalogo' %}">Catálogo</a>
             {% endif %}
 
             <form method="post" action="{% url 'logout' %}">
