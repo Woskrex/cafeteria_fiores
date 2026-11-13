@@ -120,3 +120,30 @@ def pedidos_del_dia(request):
         'estados': Pedido.ESTADOS,
         'estado_actual': estado,
     })
+
+
+@solo_encargado
+@require_POST
+def avanzar_pedido(request, pedido_id):
+    flujo = {
+        'Pendiente': 'En preparación',
+        'En preparación': 'Listo',
+        'Listo': 'Entregado',
+    }
+
+    with transaction.atomic():
+        pedido = get_object_or_404(
+            Pedido.objects.select_for_update(),
+            id=pedido_id
+        )
+
+        siguiente = flujo.get(pedido.estado)
+
+        if siguiente is None:
+            messages.error(request, 'Este pedido no puede avanzar')
+        else:
+            pedido.estado = siguiente
+            pedido.save(update_fields=['estado'])
+            messages.success(request, 'Estado actualizado correctamente')
+
+    return redirect('pedidos_del_dia')

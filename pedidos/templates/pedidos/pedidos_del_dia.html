@@ -25,6 +25,7 @@
         <th>Hora de retiro</th>
         <th>Estado</th>
         <th>Total</th>
+        <th>Acciones</th>
     </tr>
 
     {% for pedido in pedidos %}
@@ -34,10 +35,20 @@
         <td>{{ pedido.hora_retiro }}</td>
         <td>{{ pedido.estado }}</td>
         <td>{{ pedido.total|pesos }}</td>
+
+<td>
+    {% if pedido.estado != 'Entregado' and pedido.estado != 'Cancelado' %}
+        <form method="post" action="{% url 'avanzar_pedido' pedido.id %}">
+            {% csrf_token %}
+            <button type="submit">Avanzar estado</button>
+        </form>
+    {% endif %}
+</td>
+
     </tr>
     {% empty %}
     <tr>
-        <td colspan="5">No hay pedidos para mostrar.</td>
+        <td colspan="6">No hay pedidos para mostrar.</td>
     </tr>
     {% endfor %}
 </table>
