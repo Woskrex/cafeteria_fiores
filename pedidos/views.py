@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import F
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 
 # Create your views here.
 @login_required
@@ -102,3 +103,20 @@ def cancelar_pedido(request, pedido_id):
 
     messages.success(request, 'Pedido cancelado correctamente')
     return redirect('mis_pedidos')
+
+@solo_encargado
+def pedidos_del_dia(request):
+    pedidos = Pedido.objects.filter(
+        fecha__date=timezone.localdate()
+    ).select_related('cliente').order_by('-fecha')
+
+    estado = request.GET.get('estado', '')
+
+    if estado in dict(Pedido.ESTADOS):
+        pedidos = pedidos.filter(estado=estado)
+
+    return render(request, 'pedidos/pedidos_del_dia.html', {
+        'pedidos': pedidos,
+        'estados': Pedido.ESTADOS,
+        'estado_actual': estado,
+    })
